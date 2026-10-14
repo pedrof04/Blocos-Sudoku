@@ -55,7 +55,7 @@ Blocos Sudoku é um jogo de puzzle onde arrastas peças para uma grelha 9x9 e li
 
 ```bash
 # 1. Clonar o repositório
-git clone https://github.com/teu-username/blocos-sudoku.git
+git clone https://github.com/pedrof04/Blocos-Sudoku.git
 cd blocos-sudoku
 
 # 2. Instalar dependências
