@@ -123,7 +123,7 @@ export class Game {
     return [...out].map((k) => [Math.floor(k / N), k % N]);
   }
 
-  private canPlaceAnywhere(p: Piece): boolean {
+  canPlaceAnywhere(p: Piece): boolean {
     for (let r = 0; r < N; r++)
       for (let c = 0; c < N; c++) if (this.canPlace(p, r, c)) return true;
     return false;

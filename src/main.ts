@@ -16,6 +16,15 @@ let W = 0,
   trayCell = 0;
 let drag: { i: number; x: number; y: number } | null = null;
 let flash: { cells: number[][]; t: number } | null = null;
+const dim = [0, 0, 0];
+const lastPiece: (Piece | null)[] = [null, null, null];
+
+function mixColor(a: string, b: string, t: number): string {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  const m = pa.map((v, i) => Math.round(v + (pb[i] - v) * t));
+  return `rgb(${m[0]}, ${m[1]}, ${m[2]})`;
+}
 
 function resize() {
   const dpr = window.devicePixelRatio || 1;
@@ -165,10 +174,26 @@ function draw() {
   }
 
   game.pieces.forEach((p, i) => {
+    if (p !== lastPiece[i]) {
+      dim[i] = 0;
+      lastPiece[i] = p;
+    }
     if (!p || (drag && drag.i === i)) return;
-    const x = i * slotW + (slotW - p.w * trayCell) / 2;
+
+    const stuck = !game.canPlaceAnywhere(p);
+    dim[i] += ((stuck ? 1 : 0) - dim[i]) * 0.15;
+    const d = dim[i];
+
+    const shake = Math.sin(performance.now() / 35) * 4 * (d * (1 - d) * 4);
+    const x = i * slotW + (slotW - p.w * trayCell) / 2 + shake;
     const y = trayY + (5 * trayCell - p.h * trayCell) / 2;
-    drawPiece(p, x, y, trayCell);
+    drawPiece(
+      { ...p, color: mixColor(p.color, "#5c6280", d) },
+      x,
+      y,
+      trayCell,
+      1 - 0.45 * d,
+    );
   });
 
   if (drag) {
@@ -207,7 +232,12 @@ canvas.addEventListener("pointerdown", (e) => {
   }
   if (e.clientY < trayY - 20) return;
   const i = Math.min(2, Math.max(0, Math.floor(e.clientX / slotW)));
-  if (!game.pieces[i]) return;
+  const piece = game.pieces[i];
+  if (!piece) return;
+  if (!game.canPlaceAnywhere(piece)) {
+    vibrate(30);
+    return;
+  }
   canvas.setPointerCapture(e.pointerId);
   drag = { i, x: e.clientX, y: e.clientY };
   vibrate(5);
