@@ -135,8 +135,33 @@ function draw() {
   const t = target();
   if (drag && t) {
     const p = game.pieces[drag.i]!;
-    if (game.canPlace(p, t.r, t.c))
-      drawPiece(p, bx + t.c * cell, by + t.r * cell, cell, 0.35);
+    if (game.canPlace(p, t.r, t.c)) {
+      const willClear = game.previewClear(p, t.r, t.c);
+      drawPiece(
+        p,
+        bx + t.c * cell,
+        by + t.r * cell,
+        cell,
+        willClear.length ? 0.6 : 0.35,
+      );
+
+      if (willClear.length) {
+        const pulse = 0.35 + 0.25 * Math.sin(performance.now() / 110);
+        willClear.forEach(([r, c]) => {
+          const x = bx + c * cell,
+            y = by + r * cell;
+          ctx.fillStyle = `rgba(255, 214, 90, ${pulse})`;
+          ctx.beginPath();
+          ctx.roundRect(x + 1, y + 1, cell - 2, cell - 2, cell * 0.18);
+          ctx.fill();
+          ctx.strokeStyle = `rgba(255, 235, 150, ${0.5 + pulse})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(x + 2, y + 2, cell - 4, cell - 4, cell * 0.16);
+          ctx.stroke();
+        });
+      }
+    }
   }
 
   game.pieces.forEach((p, i) => {

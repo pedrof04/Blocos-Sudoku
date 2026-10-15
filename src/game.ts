@@ -95,6 +95,34 @@ export class Game {
     });
   }
 
+  /** Células que seriam limpas se a peça fosse colocada em (r, c). Não altera o tabuleiro. */
+  previewClear(p: Piece, r: number, c: number): number[][] {
+    if (!this.canPlace(p, r, c)) return [];
+    const filled = (rr: number, cc: number) =>
+      this.board[rr][cc] !== null ||
+      p.cells.some(([dr, dc]) => r + dr === rr && c + dc === cc);
+
+    const out = new Set<number>();
+    const check = (cells: number[][]) => {
+      if (cells.every(([a, b]) => filled(a, b)))
+        cells.forEach(([a, b]) => out.add(a * N + b));
+    };
+
+    for (let i = 0; i < N; i++) {
+      check(Array.from({ length: N }, (_, k) => [i, k]));
+      check(Array.from({ length: N }, (_, k) => [k, i]));
+    }
+    for (let br = 0; br < 3; br++) {
+      for (let bc = 0; bc < 3; bc++) {
+        const box: number[][] = [];
+        for (let a = 0; a < 3; a++)
+          for (let b = 0; b < 3; b++) box.push([br * 3 + a, bc * 3 + b]);
+        check(box);
+      }
+    }
+    return [...out].map((k) => [Math.floor(k / N), k % N]);
+  }
+
   private canPlaceAnywhere(p: Piece): boolean {
     for (let r = 0; r < N; r++)
       for (let c = 0; c < N; c++) if (this.canPlace(p, r, c)) return true;
