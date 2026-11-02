@@ -1,6 +1,7 @@
 import "./style.css";
 import { Game, N } from "./game";
 import { Piece } from "./pieces";
+import { inject } from "@vercel/analytics";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d")!;
@@ -274,3 +275,6 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("pagehide", () => game.persist());
 
 game.restore().finally(() => requestAnimationFrame(draw));
+
+// Initialize Vercel Analytics
+inject();
